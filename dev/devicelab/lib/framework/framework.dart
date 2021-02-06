@@ -111,6 +111,7 @@ class _TaskRunner {
         '--enable-windows-desktop',
         '--enable-linux-desktop',
         '--enable-web',
+        '--enable-tvos',
         if (localEngine != null) ...<String>['--local-engine', localEngine],
       ], canFail: true);
       if (configResult != 0) {

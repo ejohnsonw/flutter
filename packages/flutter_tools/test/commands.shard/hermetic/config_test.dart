@@ -106,6 +106,7 @@ void main() {
       ]);
 
       expect(globals.config.getValue('enable-web'), true);
+      expect(globals.config.getValue('enable-tvos'), true);
       expect(globals.config.getValue('enable-linux-desktop'), true);
       expect(globals.config.getValue('enable-windows-desktop'), true);
       expect(globals.config.getValue('enable-macos-desktop'), true);
@@ -126,7 +127,7 @@ void main() {
         '--no-enable-windows-desktop',
         '--no-enable-macos-desktop',
       ]);
-
+      expect(globals.config.getValue('enable-tvos'), false);
       expect(globals.config.getValue('enable-web'), false);
       expect(globals.config.getValue('enable-linux-desktop'), false);
       expect(globals.config.getValue('enable-windows-desktop'), false);

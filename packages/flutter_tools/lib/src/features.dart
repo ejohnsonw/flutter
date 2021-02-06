@@ -45,6 +45,9 @@ abstract class FeatureFlags {
   /// Whether iOS is enabled.
   bool get isIOSEnabled => true;
 
+  /// Whether iOS is enabled.
+  bool get isTVOSEnabled => true;
+
   /// Whether fuchsia is enabled.
   bool get isFuchsiaEnabled => true;
 
@@ -92,6 +95,9 @@ class FlutterFeatureFlags implements FeatureFlags {
   bool get isIOSEnabled => isEnabled(flutterIOSFeature);
 
   @override
+  bool get isTVOSEnabled => isEnabled(flutterTVOSFeature);
+
+  @override
   bool get isFuchsiaEnabled => isEnabled(flutterFuchsiaFeature);
 
   @override
@@ -132,6 +138,7 @@ const List<Feature> allFeatures = <Feature>[
   singleWidgetReload,
   flutterAndroidFeature,
   flutterIOSFeature,
+  flutterTVOSFeature,
   flutterFuchsiaFeature,
   experimentalInvalidationStrategy,
 ];
@@ -261,6 +268,28 @@ const Feature flutterAndroidFeature = Feature(
 const Feature flutterIOSFeature = Feature(
   name: 'Flutter for iOS',
   configSetting: 'enable-ios',
+  master: FeatureChannelSetting(
+    available: true,
+    enabledByDefault: true,
+  ),
+  dev: FeatureChannelSetting(
+    available: true,
+    enabledByDefault: true,
+  ),
+  beta: FeatureChannelSetting(
+    available: true,
+    enabledByDefault: true,
+  ),
+  stable: FeatureChannelSetting(
+    available: true,
+    enabledByDefault: true,
+  ),
+);
+
+/// The [Feature] for TVOS devices.
+const Feature flutterTVOSFeature = Feature(
+  name: 'Flutter for TVOS',
+  configSetting: 'enable-tvos',
   master: FeatureChannelSetting(
     available: true,
     enabledByDefault: true,

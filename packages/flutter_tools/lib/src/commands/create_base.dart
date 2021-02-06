@@ -322,6 +322,7 @@ abstract class CreateBase extends FlutterCommand {
     String dartSdkVersionBounds,
     bool withPluginHook = false,
     bool ios = false,
+    bool tvos = false,
     bool android = false,
     bool web = false,
     bool linux = false,
@@ -421,6 +422,7 @@ abstract class CreateBase extends FlutterCommand {
       await project.ensureReadyForPlatformSpecificTooling(
         androidPlatform: templateContext['android'] as bool ?? false,
         iosPlatform: templateContext['ios'] as bool ?? false,
+        tvosPlatform: templateContext['tvos'] as bool ?? false,
         linuxPlatform: templateContext['linux'] as bool ?? false,
         macOSPlatform: templateContext['macos'] as bool ?? false,
         windowsPlatform: templateContext['windows'] as bool ?? false,

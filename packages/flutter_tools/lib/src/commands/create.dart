@@ -233,6 +233,7 @@ class CreateCommand extends CreateBase {
       androidLanguage: stringArg('android-language'),
       iosLanguage: stringArg('ios-language'),
       ios: platforms.contains('ios'),
+        tvos: platforms.contains('tvos'),
       android: platforms.contains('android'),
       web: featureFlags.isWebEnabled && platforms.contains('web'),
       linux: featureFlags.isLinuxEnabled && platforms.contains('linux'),
@@ -356,6 +357,7 @@ Your $application code is in $relativeAppMain.
       await project.ensureReadyForPlatformSpecificTooling(
         androidPlatform: true,
         iosPlatform: true,
+        tvosPlatform: true,
       );
     }
     return generatedCount;
@@ -384,6 +386,7 @@ Your $application code is in $relativeAppMain.
     if (!argResults.wasParsed('platforms')) {
       // If the user didn't explicitly declare the platforms, we don't generate any platforms.
       templateContext['ios'] = false;
+      templateContext['tvos'] = false;
       templateContext['android'] = false;
       templateContext['web'] = false;
       templateContext['linux'] = false;
@@ -430,6 +433,7 @@ Your $application code is in $relativeAppMain.
     templateContext['projectName'] = exampleProjectName;
     templateContext['androidIdentifier'] = createAndroidIdentifier(organization, exampleProjectName);
     templateContext['iosIdentifier'] = createUTIIdentifier(organization, exampleProjectName);
+    templateContext['tvosIdentifier'] = createUTIIdentifier(organization, exampleProjectName);
     templateContext['macosIdentifier'] = createUTIIdentifier(organization, exampleProjectName);
     templateContext['description'] = 'Demonstrates how to use the $projectName plugin.';
     templateContext['pluginProjectName'] = projectName;
@@ -457,6 +461,8 @@ Your $application code is in $relativeAppMain.
     return <String>[
       if (templateContext['ios'] == true)
         'ios',
+      if (templateContext['tvos'] == true)
+        'tvos',
       if (templateContext['android'] == true)
         'android',
       if (templateContext['web'] == true)

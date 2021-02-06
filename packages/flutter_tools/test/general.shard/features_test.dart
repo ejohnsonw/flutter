@@ -220,6 +220,13 @@ void main() {
       expect(featureFlags.isMacOSEnabled, true);
     });
 
+    testWithoutContext('flutter tvos desktop enabled with config on master', () {
+      when(mockFlutterVerion.channel).thenReturn('master');
+      testConfig.setValue('enable-tvos', true);
+
+      expect(featureFlags.isMacOSEnabled, true);
+    });
+
     testWithoutContext('flutter macos desktop enabled with environment variable on master', () {
       when(mockFlutterVerion.channel).thenReturn('master');
       when(mockPlatform.environment).thenReturn(<String, String>{'FLUTTER_MACOS': 'true'});

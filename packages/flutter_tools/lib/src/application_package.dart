@@ -415,6 +415,70 @@ abstract class IOSApp extends ApplicationPackage {
   String get deviceBundlePath;
 }
 
+class BuildableTVOSApp extends IOSApp {
+  BuildableTVOSApp(this.project, String projectBundleId, String hostAppBundleName)
+      : _hostAppBundleName = hostAppBundleName,
+        super(projectBundleId: projectBundleId);
+
+  static Future<BuildableTVOSApp> fromProject(TvosProject project, BuildInfo buildInfo) async {
+    final String projectBundleId = await project.productBundleIdentifier(buildInfo);
+    final String hostAppBundleName = await project.hostAppBundleName(buildInfo);
+    return BuildableTVOSApp(project, projectBundleId, hostAppBundleName);
+  }
+
+  final TvosProject project;
+
+  final String _hostAppBundleName;
+
+  @override
+  String get name => _hostAppBundleName;
+
+  @override
+  String get simulatorBundlePath => _buildAppPath('iphonesimulator');
+
+  @override
+  String get deviceBundlePath => _buildAppPath('iphoneos');
+
+  // Xcode uses this path for the final archive bundle location,
+  // not a top-level output directory.
+  // Specifying `build/ios/archive/Runner` will result in `build/ios/archive/Runner.xcarchive`.
+  String get archiveBundlePath
+  => globals.fs.path.join(getIosBuildDirectory(), 'archive', globals.fs.path.withoutExtension(_hostAppBundleName));
+
+  // The output xcarchive bundle path `build/ios/archive/Runner.xcarchive`.
+  String get archiveBundleOutputPath =>
+      globals.fs.path.setExtension(archiveBundlePath, '.xcarchive');
+
+  String get ipaOutputPath =>
+      globals.fs.path.join(getIosBuildDirectory(), 'ipa');
+
+  String _buildAppPath(String type) {
+    return globals.fs.path.join(getIosBuildDirectory(), type, _hostAppBundleName);
+  }
+}
+
+class PrebuiltTVOSApp extends IOSApp {
+  PrebuiltTVOSApp({
+    this.bundleDir,
+    this.bundleName,
+    @required String projectBundleId,
+  }) : super(projectBundleId: projectBundleId);
+
+  final Directory bundleDir;
+  final String bundleName;
+
+  @override
+  String get name => bundleName;
+
+  @override
+  String get simulatorBundlePath => _bundlePath;
+
+  @override
+  String get deviceBundlePath => _bundlePath;
+
+  String get _bundlePath => bundleDir.path;
+}
+
 class BuildableIOSApp extends IOSApp {
   BuildableIOSApp(this.project, String projectBundleId, String hostAppBundleName)
     : _hostAppBundleName = hostAppBundleName,
