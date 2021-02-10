@@ -53,7 +53,7 @@ Future<void> updateGeneratedXcodeProperties({
   @required FlutterProject project,
   @required BuildInfo buildInfo,
   String targetOverride,
-  ApplePlatform platformConfig = ApplePlatform.tvos,
+  CupertinoPlatform platformConfig = CupertinoPlatform.tvos,
   bool setSymroot = true,
   String buildDirOverride,
 }) async {
@@ -85,7 +85,7 @@ Future<void> updateGeneratedXcodeProperties({
 void _updateGeneratedXcodePropertiesFile({
   @required FlutterProject project,
   @required List<String> xcodeBuildSettings,
-  ApplePlatform platformConfig = ApplePlatform.tvos,
+  CupertinoPlatform platformConfig = CupertinoPlatform.tvos,
 }) {
   final StringBuffer localsBuffer = StringBuffer();
 
@@ -105,7 +105,7 @@ void _updateGeneratedXcodePropertiesFile({
 void _updateGeneratedEnvironmentVariablesScript({
   @required FlutterProject project,
   @required List<String> xcodeBuildSettings,
-  ApplePlatform platformConfig = ApplePlatform.tvos,
+  CupertinoPlatform platformConfig = CupertinoPlatform.tvos,
 }) {
   final StringBuffer localsBuffer = StringBuffer();
 
@@ -162,7 +162,7 @@ List<String> _xcodeBuildSettingsLines({
   @required FlutterProject project,
   @required BuildInfo buildInfo,
   String targetOverride,
-  ApplePlatform platformConfig = ApplePlatform.tvos,
+  CupertinoPlatform platformConfig = CupertinoPlatform.tvos,
   bool setSymroot = true,
   String buildDirOverride,
 }) {
@@ -208,7 +208,7 @@ List<String> _xcodeBuildSettingsLines({
     // paths ending in _arm, 64-bit builds are not.
     //
     // Skip this step for macOS builds.
-    if (platformConfig == ApplePlatform.tvos) {
+    if (platformConfig == CupertinoPlatform.tvos) {
       String arch;
       if (localEngineName.endsWith('_arm')) {
         arch = 'armv7';
@@ -221,7 +221,7 @@ List<String> _xcodeBuildSettingsLines({
       xcodeBuildSettings.add('ARCHS=$arch');
     }
   }
-  if (platformConfig != ApplePlatform.tvos) {
+  if (platformConfig != CupertinoPlatform.tvos) {
     // ARM not yet supported https://github.com/flutter/flutter/issues/69221
     xcodeBuildSettings.add('EXCLUDED_ARCHS=arm64');
   }

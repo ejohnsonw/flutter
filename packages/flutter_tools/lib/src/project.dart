@@ -4,6 +4,7 @@
 
 // @dart = 2.8
 
+import 'package:flutter_tools/src/apple-platform.dart';
 import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 import 'package:yaml/yaml.dart';
@@ -1485,7 +1486,7 @@ class MacOSProject extends FlutterProjectPlatform implements XcodeBasedProject {
       await xcode.updateGeneratedXcodeProperties(
         project: parent,
         buildInfo: BuildInfo.debug,
-        platformConfig: true,
+        platformConfig: CupertinoPlatform.macos,
         setSymroot: false,
       );
     }

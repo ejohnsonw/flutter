@@ -1,1 +1,1 @@
-enum ApplePlatform { ios, macos, tvos }
+enum CupertinoPlatform { ios, macos, tvos }

@@ -60,7 +60,7 @@ Future<void> buildMacOS({
     project: flutterProject,
     buildInfo: buildInfo,
     targetOverride: targetOverride,
-    platformConfig: ApplePlatform.macos ,
+    platformConfig: CupertinoPlatform.macos ,
     setSymroot: false,
   );
   await processPodsIfNeeded(flutterProject.macos, getMacOSBuildDirectory(), buildInfo.mode);
