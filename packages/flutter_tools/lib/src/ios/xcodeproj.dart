@@ -23,12 +23,13 @@ import '../flutter_manifest.dart';
 import '../globals.dart' as globals;
 import '../project.dart';
 import '../reporting/reporting.dart';
+import '../apple-platform.dart';
 
 final RegExp _settingExpr = RegExp(r'(\w+)\s*=\s*(.*)$');
 final RegExp _varExpr = RegExp(r'\$\(([^)]*)\)');
 
-String flutterMacOSFrameworkDir(BuildMode mode, FileSystem fileSystem,
-    Artifacts artifacts) {
+String flutterMacOSFrameworkDir(
+    BuildMode mode, FileSystem fileSystem, Artifacts artifacts) {
   final String flutterMacOSFramework = artifacts.getArtifactPath(
     Artifact.flutterMacOSFramework,
     platform: TargetPlatform.darwin_x64,
@@ -51,7 +52,7 @@ Future<void> updateGeneratedXcodeProperties({
   @required FlutterProject project,
   @required BuildInfo buildInfo,
   String targetOverride,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.ios,
   bool setSymroot = true,
   String buildDirOverride,
 }) async {
@@ -59,7 +60,7 @@ Future<void> updateGeneratedXcodeProperties({
     project: project,
     buildInfo: buildInfo,
     targetOverride: targetOverride,
-    useMacOSConfig: useMacOSConfig,
+    platformConfig: platformConfig,
     setSymroot: setSymroot,
     buildDirOverride: buildDirOverride,
   );
@@ -67,13 +68,13 @@ Future<void> updateGeneratedXcodeProperties({
   _updateGeneratedXcodePropertiesFile(
     project: project,
     xcodeBuildSettings: xcodeBuildSettings,
-    useMacOSConfig: useMacOSConfig,
+    platformConfig: platformConfig,
   );
 
   _updateGeneratedEnvironmentVariablesScript(
     project: project,
     xcodeBuildSettings: xcodeBuildSettings,
-    useMacOSConfig: useMacOSConfig,
+    platformConfig: platformConfig,
   );
 }
 
@@ -83,16 +84,27 @@ Future<void> updateGeneratedXcodeProperties({
 void _updateGeneratedXcodePropertiesFile({
   @required FlutterProject project,
   @required List<String> xcodeBuildSettings,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.ios,
 }) {
   final StringBuffer localsBuffer = StringBuffer();
 
   localsBuffer.writeln('// This is a generated file; do not edit or check into version control.');
   xcodeBuildSettings.forEach(localsBuffer.writeln);
-  final File generatedXcodePropertiesFile = useMacOSConfig
-    ? project.macos.generatedXcodePropertiesFile
-    : project.ios.generatedXcodePropertiesFile;
-
+  File generatedXcodePropertiesFile;
+  // switch (platformConfig) {
+  //   case ApplePlatform.macos:
+  //     generatedXcodePropertiesFile = project.macos.generatedXcodePropertiesFile;
+  //     break;
+  //   case ApplePlatform.tvos:
+  //     generatedXcodePropertiesFile = project.tvos.generatedXcodePropertiesFile;
+  //     break;
+  //   default:
+  //     generatedXcodePropertiesFile = project.ios.generatedXcodePropertiesFile;
+  // }
+  // platformConfig == ApplePlatform.macos
+  //  ? project.macos.generatedXcodePropertiesFile
+  //  : project.ios.generatedXcodePropertiesFile;
+  generatedXcodePropertiesFile = project.ios.generatedXcodePropertiesFile;
   generatedXcodePropertiesFile.createSync(recursive: true);
   generatedXcodePropertiesFile.writeAsStringSync(localsBuffer.toString());
 }
@@ -103,19 +115,35 @@ void _updateGeneratedXcodePropertiesFile({
 void _updateGeneratedEnvironmentVariablesScript({
   @required FlutterProject project,
   @required List<String> xcodeBuildSettings,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.ios,
 }) {
   final StringBuffer localsBuffer = StringBuffer();
 
   localsBuffer.writeln('#!/bin/sh');
-  localsBuffer.writeln('# This is a generated file; do not edit or check into version control.');
+  localsBuffer.writeln(
+      '# This is a generated file; do not edit or check into version control.');
   for (final String line in xcodeBuildSettings) {
     localsBuffer.writeln('export "$line"');
   }
 
-  final File generatedModuleBuildPhaseScript = useMacOSConfig
-    ? project.macos.generatedEnvironmentVariableExportScript
-    : project.ios.generatedEnvironmentVariableExportScript;
+  // final File generatedModuleBuildPhaseScript = platformConfig
+  //   ? project.macos.generatedEnvironmentVariableExportScript
+  //   : project.ios.generatedEnvironmentVariableExportScript;
+  File generatedModuleBuildPhaseScript;
+  // switch (platformConfig) {
+  //   case ApplePlatform.macos:
+  //     generatedModuleBuildPhaseScript =
+  //         project.macos.generatedEnvironmentVariableExportScript;
+  //     break;
+  //   case ApplePlatform.tvos:
+  //     generatedModuleBuildPhaseScript =
+  //         project.tvos.generatedEnvironmentVariableExportScript;
+  //     break;
+  //   default:
+  //     generatedModuleBuildPhaseScript =
+  //         project.ios.generatedEnvironmentVariableExportScript;
+  // }
+  generatedModuleBuildPhaseScript = project.ios.generatedEnvironmentVariableExportScript;
   generatedModuleBuildPhaseScript.createSync(recursive: true);
   generatedModuleBuildPhaseScript.writeAsStringSync(localsBuffer.toString());
   globals.os.chmod(generatedModuleBuildPhaseScript, '755');
@@ -127,7 +155,8 @@ String parsedBuildName({
   @required BuildInfo buildInfo,
 }) {
   final String buildNameToParse = buildInfo?.buildName ?? manifest.buildName;
-  return validatedBuildNameForPlatform(TargetPlatform.ios, buildNameToParse, globals.logger);
+  return validatedBuildNameForPlatform(
+      TargetPlatform.ios, buildNameToParse, globals.logger);
 }
 
 /// Build number parsed and validated from build info and manifest. Used for CFBundleVersion.
@@ -159,7 +188,7 @@ List<String> _xcodeBuildSettingsLines({
   @required FlutterProject project,
   @required BuildInfo buildInfo,
   String targetOverride,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.ios,
   bool setSymroot = true,
   String buildDirOverride,
 }) {
@@ -169,7 +198,8 @@ List<String> _xcodeBuildSettingsLines({
   xcodeBuildSettings.add('FLUTTER_ROOT=$flutterRoot');
 
   // This holds because requiresProjectRoot is true for this command
-  xcodeBuildSettings.add('FLUTTER_APPLICATION_PATH=${globals.fs.path.normalize(project.directory.path)}');
+  xcodeBuildSettings.add(
+      'FLUTTER_APPLICATION_PATH=${globals.fs.path.normalize(project.directory.path)}');
 
   // Relative to FLUTTER_APPLICATION_PATH, which is [Directory.current].
   if (targetOverride != null) {
@@ -177,22 +207,30 @@ List<String> _xcodeBuildSettingsLines({
   }
 
   // The build outputs directory, relative to FLUTTER_APPLICATION_PATH.
-  xcodeBuildSettings.add('FLUTTER_BUILD_DIR=${buildDirOverride ?? getBuildDirectory()}');
+  xcodeBuildSettings
+      .add('FLUTTER_BUILD_DIR=${buildDirOverride ?? getBuildDirectory()}');
 
   if (setSymroot) {
-    xcodeBuildSettings.add('SYMROOT=\${SOURCE_ROOT}/../${getIosBuildDirectory()}');
+    xcodeBuildSettings
+        .add('SYMROOT=\${SOURCE_ROOT}/../${getIosBuildDirectory()}');
   }
 
-  final String buildName = parsedBuildName(manifest: project.manifest, buildInfo: buildInfo) ?? '1.0.0';
+  final String buildName =
+      parsedBuildName(manifest: project.manifest, buildInfo: buildInfo) ??
+          '1.0.0';
   xcodeBuildSettings.add('FLUTTER_BUILD_NAME=$buildName');
 
-  final String buildNumber = parsedBuildNumber(manifest: project.manifest, buildInfo: buildInfo) ?? '1';
+  final String buildNumber =
+      parsedBuildNumber(manifest: project.manifest, buildInfo: buildInfo) ??
+          '1';
   xcodeBuildSettings.add('FLUTTER_BUILD_NUMBER=$buildNumber');
 
   if (globals.artifacts is LocalEngineArtifacts) {
-    final LocalEngineArtifacts localEngineArtifacts = globals.artifacts as LocalEngineArtifacts;
+    final LocalEngineArtifacts localEngineArtifacts =
+        globals.artifacts as LocalEngineArtifacts;
     final String engineOutPath = localEngineArtifacts.engineOutPath;
-    xcodeBuildSettings.add('FLUTTER_ENGINE=${globals.fs.path.dirname(globals.fs.path.dirname(engineOutPath))}');
+    xcodeBuildSettings.add(
+        'FLUTTER_ENGINE=${globals.fs.path.dirname(globals.fs.path.dirname(engineOutPath))}');
 
     final String localEngineName = globals.fs.path.basename(engineOutPath);
     xcodeBuildSettings.add('LOCAL_ENGINE=$localEngineName');
@@ -205,7 +243,7 @@ List<String> _xcodeBuildSettingsLines({
     // paths ending in _arm, 64-bit builds are not.
     //
     // Skip this step for macOS builds.
-    if (!useMacOSConfig) {
+    if (platformConfig != ApplePlatform.macos) {
       String arch;
       if (localEngineName.endsWith('_arm')) {
         arch = 'armv7';
@@ -218,12 +256,13 @@ List<String> _xcodeBuildSettingsLines({
       xcodeBuildSettings.add('ARCHS=$arch');
     }
   }
-  if (useMacOSConfig) {
+  if (platformConfig != ApplePlatform.macos) {
     // ARM not yet supported https://github.com/flutter/flutter/issues/69221
     xcodeBuildSettings.add('EXCLUDED_ARCHS=arm64');
   }
 
-  for (final MapEntry<String, String> config in buildInfo.toEnvironmentConfig().entries) {
+  for (final MapEntry<String, String> config
+      in buildInfo.toEnvironmentConfig().entries) {
     xcodeBuildSettings.add('${config.key}=${config.value}');
   }
   return xcodeBuildSettings;
@@ -259,11 +298,12 @@ class XcodeProjectInterpreter {
     int majorVersion,
     int minorVersion,
     int patchVersion,
-  }) : _platform = platform,
+  })  : _platform = platform,
         _fileSystem = fileSystem,
         _terminal = terminal,
         _logger = logger,
-        _processUtils = ProcessUtils(logger: logger, processManager: processManager),
+        _processUtils =
+            ProcessUtils(logger: logger, processManager: processManager),
         _operatingSystemUtils = OperatingSystemUtils(
           fileSystem: fileSystem,
           logger: logger,
@@ -315,7 +355,8 @@ class XcodeProjectInterpreter {
   static final RegExp _versionRegex = RegExp(r'Xcode ([0-9.]+)');
 
   void _updateVersion() {
-    if (!_platform.isMacOS || !_fileSystem.file('/usr/bin/xcodebuild').existsSync()) {
+    if (!_platform.isMacOS ||
+        !_fileSystem.file('/usr/bin/xcodebuild').existsSync()) {
       return;
     }
     try {
@@ -345,6 +386,7 @@ class XcodeProjectInterpreter {
   bool get isInstalled => majorVersion != null;
 
   String _versionText;
+
   String get versionText {
     if (_versionText == null) {
       _updateVersion();
@@ -353,6 +395,7 @@ class XcodeProjectInterpreter {
   }
 
   int _majorVersion;
+
   int get majorVersion {
     if (_majorVersion == null) {
       _updateVersion();
@@ -361,6 +404,7 @@ class XcodeProjectInterpreter {
   }
 
   int _minorVersion;
+
   int get minorVersion {
     if (_minorVersion == null) {
       _updateVersion();
@@ -369,6 +413,7 @@ class XcodeProjectInterpreter {
   }
 
   int _patchVersion;
+
   int get patchVersion {
     if (_patchVersion == null) {
       _updateVersion();
@@ -414,8 +459,7 @@ class XcodeProjectInterpreter {
       'xcodebuild',
       '-project',
       _fileSystem.path.absolute(projectPath),
-      if (scheme != null)
-        ...<String>['-scheme', scheme],
+      if (scheme != null) ...<String>['-scheme', scheme],
       '-showBuildSettings',
       ...environmentVariablesAsXcodeBuildSettings(_platform)
     ];
@@ -434,19 +478,22 @@ class XcodeProjectInterpreter {
       return parseXcodeBuildSettings(out);
     } on Exception catch (error) {
       if (error is ProcessException && error.toString().contains('timed out')) {
-        BuildEvent('xcode-show-build-settings-timeout',
+        BuildEvent(
+          'xcode-show-build-settings-timeout',
           command: showBuildSettingsCommand.join(' '),
           flutterUsage: _usage,
         ).send();
       }
-      _logger.printTrace('Unexpected failure to get the build settings: $error.');
+      _logger
+          .printTrace('Unexpected failure to get the build settings: $error.');
       return const <String, String>{};
     } finally {
       status.stop();
     }
   }
 
-  Future<void> cleanWorkspace(String workspacePath, String scheme, { bool verbose = false }) async {
+  Future<void> cleanWorkspace(String workspacePath, String scheme,
+      {bool verbose = false}) async {
     await _processUtils.run(<String>[
       ...xcrunCommand(),
       'xcodebuild',
@@ -454,14 +501,14 @@ class XcodeProjectInterpreter {
       workspacePath,
       '-scheme',
       scheme,
-      if (!verbose)
-        '-quiet',
+      if (!verbose) '-quiet',
       'clean',
       ...environmentVariablesAsXcodeBuildSettings(_platform)
     ], workingDirectory: _fileSystem.currentDirectory.path);
   }
 
-  Future<XcodeProjectInfo> getInfo(String projectPath, {String projectFilename}) async {
+  Future<XcodeProjectInfo> getInfo(String projectPath,
+      {String projectFilename}) async {
     // The exit code returned by 'xcodebuild -list' when either:
     // * -project is passed and the given project isn't there, or
     // * no -project is passed and there isn't a project.
@@ -478,7 +525,8 @@ class XcodeProjectInterpreter {
       workingDirectory: projectPath,
     );
     if (result.exitCode == missingProjectExitCode) {
-      throwToolExit('Unable to get Xcode project information:\n ${result.stderr}');
+      throwToolExit(
+          'Unable to get Xcode project information:\n ${result.stderr}');
     }
     return XcodeProjectInfo.fromXcodeBuildOutput(result.toString(), _logger);
   }
@@ -490,18 +538,22 @@ class XcodeProjectInterpreter {
 /// environment without requiring settings changes in the Xcode project.
 List<String> environmentVariablesAsXcodeBuildSettings(Platform platform) {
   const String xcodeBuildSettingPrefix = 'FLUTTER_XCODE_';
-  return platform.environment.entries.where((MapEntry<String, String> mapEntry) {
+  return platform.environment.entries
+      .where((MapEntry<String, String> mapEntry) {
     return mapEntry.key.startsWith(xcodeBuildSettingPrefix);
   }).expand<String>((MapEntry<String, String> mapEntry) {
     // Remove FLUTTER_XCODE_ prefix from the environment variable to get the build setting.
-    final String trimmedBuildSettingKey = mapEntry.key.substring(xcodeBuildSettingPrefix.length);
+    final String trimmedBuildSettingKey =
+        mapEntry.key.substring(xcodeBuildSettingPrefix.length);
     return <String>['$trimmedBuildSettingKey=${mapEntry.value}'];
   }).toList();
 }
 
 Map<String, String> parseXcodeBuildSettings(String showBuildSettingsOutput) {
   final Map<String, String> settings = <String, String>{};
-  for (final Match match in showBuildSettingsOutput.split('\n').map<Match>(_settingExpr.firstMatch)) {
+  for (final Match match in showBuildSettingsOutput
+      .split('\n')
+      .map<Match>(_settingExpr.firstMatch)) {
     if (match != null) {
       settings[match[1]] = match[2];
     }
@@ -511,13 +563,15 @@ Map<String, String> parseXcodeBuildSettings(String showBuildSettingsOutput) {
 
 /// Substitutes variables in [str] with their values from the specified Xcode
 /// project and target.
-String substituteXcodeVariables(String str, Map<String, String> xcodeBuildSettings) {
+String substituteXcodeVariables(
+    String str, Map<String, String> xcodeBuildSettings) {
   final Iterable<Match> matches = _varExpr.allMatches(str);
   if (matches.isEmpty) {
     return str;
   }
 
-  return str.replaceAllMapped(_varExpr, (Match m) => xcodeBuildSettings[m[1]] ?? m[0]);
+  return str.replaceAllMapped(
+      _varExpr, (Match m) => xcodeBuildSettings[m[1]] ?? m[0]);
 }
 
 /// Information about an Xcode project.
@@ -525,11 +579,8 @@ String substituteXcodeVariables(String str, Map<String, String> xcodeBuildSettin
 /// Represents the output of `xcodebuild -list`.
 class XcodeProjectInfo {
   XcodeProjectInfo(
-    this.targets,
-    this.buildConfigurations,
-    this.schemes,
-    Logger logger
-  ) : _logger = logger;
+      this.targets, this.buildConfigurations, this.schemes, Logger logger)
+      : _logger = logger;
 
   factory XcodeProjectInfo.fromXcodeBuildOutput(String output, Logger logger) {
     final List<String> targets = <String>[];
@@ -563,7 +614,8 @@ class XcodeProjectInfo {
   final List<String> schemes;
   final Logger _logger;
 
-  bool get definesCustomSchemes => !(schemes.contains('Runner') && schemes.length == 1);
+  bool get definesCustomSchemes =>
+      !(schemes.contains('Runner') && schemes.length == 1);
 
   /// The expected scheme for [buildInfo].
   @visibleForTesting
@@ -572,7 +624,8 @@ class XcodeProjectInfo {
   }
 
   /// The expected build configuration for [buildInfo] and [scheme].
-  static String expectedBuildConfigurationFor(BuildInfo buildInfo, String scheme) {
+  static String expectedBuildConfigurationFor(
+      BuildInfo buildInfo, String scheme) {
     final String baseConfiguration = _baseConfigurationFor(buildInfo);
     if (buildInfo.flavor == null) {
       return baseConfiguration;
@@ -591,6 +644,7 @@ class XcodeProjectInfo {
     }
     return false;
   }
+
   /// Returns unique scheme matching [buildInfo], or null, if there is no unique
   /// best match.
   String schemeFor(BuildInfo buildInfo) {
@@ -606,17 +660,21 @@ class XcodeProjectInfo {
   void reportFlavorNotFoundAndExit() {
     _logger.printError('');
     if (definesCustomSchemes) {
-      _logger.printError('The Xcode project defines schemes: ${schemes.join(', ')}');
-      throwToolExit('You must specify a --flavor option to select one of the available schemes.');
+      _logger.printError(
+          'The Xcode project defines schemes: ${schemes.join(', ')}');
+      throwToolExit(
+          'You must specify a --flavor option to select one of the available schemes.');
     } else {
-      throwToolExit('The Xcode project does not define custom schemes. You cannot use the --flavor option.');
+      throwToolExit(
+          'The Xcode project does not define custom schemes. You cannot use the --flavor option.');
     }
   }
 
   /// Returns unique build configuration matching [buildInfo] and [scheme], or
   /// null, if there is no unique best match.
   String buildConfigurationFor(BuildInfo buildInfo, String scheme) {
-    final String expectedConfiguration = expectedBuildConfigurationFor(buildInfo, scheme);
+    final String expectedConfiguration =
+        expectedBuildConfigurationFor(buildInfo, scheme);
     if (hasBuildConfigurationForBuildMode(expectedConfiguration)) {
       return expectedConfiguration;
     }
@@ -626,7 +684,8 @@ class XcodeProjectInfo {
       if (buildInfo.flavor == null) {
         return candidate == expectedConfiguration.toLowerCase();
       }
-      return candidate.contains(baseConfiguration.toLowerCase()) && candidate.contains(scheme.toLowerCase());
+      return candidate.contains(baseConfiguration.toLowerCase()) &&
+          candidate.contains(scheme.toLowerCase());
     });
   }
 

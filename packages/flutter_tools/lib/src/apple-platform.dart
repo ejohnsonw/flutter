@@ -1,0 +1,1 @@
+enum ApplePlatform { ios, macos, tvos }

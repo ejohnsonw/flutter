@@ -8,6 +8,8 @@ import 'package:file/memory.dart';
 import 'package:meta/meta.dart';
 
 import '../artifacts.dart';
+import '../apple-platform.dart';
+
 import '../base/common.dart';
 import '../base/file_system.dart';
 import '../base/io.dart';
@@ -40,7 +42,7 @@ String flutterMacOSFrameworkDir(BuildMode mode, FileSystem fileSystem,
 
 /// Writes or rewrites Xcode property files with the specified information.
 ///
-/// useMacOSConfig: Optional parameter that controls whether we use the macOS
+/// platformConfig: Optional parameter that controls whether we use the macOS
 /// project file instead. Defaults to false.
 ///
 /// setSymroot: Optional parameter to control whether to set SYMROOT.
@@ -51,7 +53,7 @@ Future<void> updateGeneratedXcodeProperties({
   @required FlutterProject project,
   @required BuildInfo buildInfo,
   String targetOverride,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.tvos,
   bool setSymroot = true,
   String buildDirOverride,
 }) async {
@@ -59,7 +61,7 @@ Future<void> updateGeneratedXcodeProperties({
     project: project,
     buildInfo: buildInfo,
     targetOverride: targetOverride,
-    useMacOSConfig: useMacOSConfig,
+    platformConfig: platformConfig,
     setSymroot: setSymroot,
     buildDirOverride: buildDirOverride,
   );
@@ -67,13 +69,13 @@ Future<void> updateGeneratedXcodeProperties({
   _updateGeneratedXcodePropertiesFile(
     project: project,
     xcodeBuildSettings: xcodeBuildSettings,
-    useMacOSConfig: useMacOSConfig,
+    platformConfig: platformConfig,
   );
 
   _updateGeneratedEnvironmentVariablesScript(
     project: project,
     xcodeBuildSettings: xcodeBuildSettings,
-    useMacOSConfig: useMacOSConfig,
+    platformConfig: platformConfig,
   );
 }
 
@@ -83,15 +85,15 @@ Future<void> updateGeneratedXcodeProperties({
 void _updateGeneratedXcodePropertiesFile({
   @required FlutterProject project,
   @required List<String> xcodeBuildSettings,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.tvos,
 }) {
   final StringBuffer localsBuffer = StringBuffer();
 
   localsBuffer.writeln('// This is a generated file; do not edit or check into version control.');
   xcodeBuildSettings.forEach(localsBuffer.writeln);
-  final File generatedXcodePropertiesFile = useMacOSConfig
-    ? project.macos.generatedXcodePropertiesFile
-    : project.ios.generatedXcodePropertiesFile;
+  final File generatedXcodePropertiesFile = project.tvos.generatedXcodePropertiesFile;
+    // ? project.macos.generatedXcodePropertiesFile
+    // : project.ios.generatedXcodePropertiesFile;
 
   generatedXcodePropertiesFile.createSync(recursive: true);
   generatedXcodePropertiesFile.writeAsStringSync(localsBuffer.toString());
@@ -103,7 +105,7 @@ void _updateGeneratedXcodePropertiesFile({
 void _updateGeneratedEnvironmentVariablesScript({
   @required FlutterProject project,
   @required List<String> xcodeBuildSettings,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.tvos,
 }) {
   final StringBuffer localsBuffer = StringBuffer();
 
@@ -113,9 +115,10 @@ void _updateGeneratedEnvironmentVariablesScript({
     localsBuffer.writeln('export "$line"');
   }
 
-  final File generatedModuleBuildPhaseScript = useMacOSConfig
-    ? project.macos.generatedEnvironmentVariableExportScript
-    : project.ios.generatedEnvironmentVariableExportScript;
+  final File generatedModuleBuildPhaseScript = project.tvos.generatedEnvironmentVariableExportScript;
+  // platformConfig
+  //   ? project.macos.generatedEnvironmentVariableExportScript
+  //   : project.ios.generatedEnvironmentVariableExportScript;
   generatedModuleBuildPhaseScript.createSync(recursive: true);
   generatedModuleBuildPhaseScript.writeAsStringSync(localsBuffer.toString());
   globals.os.chmod(generatedModuleBuildPhaseScript, '755');
@@ -159,7 +162,7 @@ List<String> _xcodeBuildSettingsLines({
   @required FlutterProject project,
   @required BuildInfo buildInfo,
   String targetOverride,
-  bool useMacOSConfig = false,
+  ApplePlatform platformConfig = ApplePlatform.tvos,
   bool setSymroot = true,
   String buildDirOverride,
 }) {
@@ -205,7 +208,7 @@ List<String> _xcodeBuildSettingsLines({
     // paths ending in _arm, 64-bit builds are not.
     //
     // Skip this step for macOS builds.
-    if (!useMacOSConfig) {
+    if (platformConfig == ApplePlatform.tvos) {
       String arch;
       if (localEngineName.endsWith('_arm')) {
         arch = 'armv7';
@@ -218,7 +221,7 @@ List<String> _xcodeBuildSettingsLines({
       xcodeBuildSettings.add('ARCHS=$arch');
     }
   }
-  if (useMacOSConfig) {
+  if (platformConfig != ApplePlatform.tvos) {
     // ARM not yet supported https://github.com/flutter/flutter/issues/69221
     xcodeBuildSettings.add('EXCLUDED_ARCHS=arm64');
   }

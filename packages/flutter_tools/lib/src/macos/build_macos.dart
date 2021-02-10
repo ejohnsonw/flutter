@@ -18,7 +18,7 @@ import '../ios/xcodeproj.dart';
 import '../project.dart';
 import 'cocoapod_utils.dart';
 import 'migrations/remove_macos_framework_link_and_embedding_migration.dart';
-
+import '../apple-platform.dart';
 /// When run in -quiet mode, Xcode only prints from the underlying tasks to stdout.
 /// Passing this regexp to trace moves the stdout output to stderr.
 final RegExp _anyOutput = RegExp('.*');
@@ -60,7 +60,7 @@ Future<void> buildMacOS({
     project: flutterProject,
     buildInfo: buildInfo,
     targetOverride: targetOverride,
-    useMacOSConfig: true,
+    platformConfig: ApplePlatform.macos ,
     setSymroot: false,
   );
   await processPodsIfNeeded(flutterProject.macos, getMacOSBuildDirectory(), buildInfo.mode);
