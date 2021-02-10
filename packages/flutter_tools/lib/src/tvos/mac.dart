@@ -4,6 +4,7 @@
 
 // @dart = 2.8
 
+import 'package:flutter_tools/src/ios/xcodeproj.dart';
 import 'package:meta/meta.dart';
 
 import '../application_package.dart';
@@ -29,7 +30,7 @@ import 'migrations/project_base_configuration_migration.dart';
 import 'migrations/project_build_location_migration.dart';
 import 'migrations/remove_framework_link_and_embedding_migration.dart';
 import 'migrations/xcode_build_system_migration.dart';
-import 'xcodeproj.dart';
+// import 'xcodeproj.dart';
 
 class IMobileDevice {
   IMobileDevice({
@@ -90,7 +91,7 @@ class IMobileDevice {
 }
 
 Future<XcodeBuildResult> buildXcodeProject({
-  BuildableIOSApp app,
+  BuildableTVOSApp app,
   BuildInfo buildInfo,
   String targetOverride,
   bool buildForDevice,
@@ -479,7 +480,7 @@ Future<void> removeFinderExtendedAttributes(Directory iosProjectDirectory, Proce
   }
 }
 
-Future<RunResult> _runBuildWithRetries(List<String> buildCommands, BuildableIOSApp app) async {
+Future<RunResult> _runBuildWithRetries(List<String> buildCommands, BuildableTVOSApp app) async {
   int buildRetryDelaySeconds = 1;
   int remainingTries = 8;
 

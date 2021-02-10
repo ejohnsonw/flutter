@@ -727,6 +727,7 @@ class TestFeatureFlags implements FeatureFlags {
     this.isSingleWidgetReloadEnabled = false,
     this.isAndroidEnabled = true,
     this.isIOSEnabled = true,
+    this.isTVOSEnabled = true,
     this.isFuchsiaEnabled = false,
     this.isExperimentalInvalidationStrategyEnabled = false,
   });
@@ -753,6 +754,9 @@ class TestFeatureFlags implements FeatureFlags {
   final bool isIOSEnabled;
 
   @override
+  final bool isTVOSEnabled;
+
+  @override
   final bool isFuchsiaEnabled;
 
   @override
@@ -775,6 +779,8 @@ class TestFeatureFlags implements FeatureFlags {
         return isAndroidEnabled;
       case flutterIOSFeature:
         return isIOSEnabled;
+      case flutterTVOSFeature:
+        return isTVOSEnabled;
       case flutterFuchsiaFeature:
         return isFuchsiaEnabled;
       case experimentalInvalidationStrategy:

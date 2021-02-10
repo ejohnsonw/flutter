@@ -87,7 +87,7 @@ final RegExp _securityFindIdentityDeveloperIdentityExtractionPattern =
 final RegExp _securityFindIdentityCertificateCnExtractionPattern = RegExp(r'.*\(([a-zA-Z0-9]+)\)');
 final RegExp _certificateOrganizationalUnitExtractionPattern = RegExp(r'OU=([a-zA-Z0-9]+)');
 
-/// Given a [BuildableIOSApp], this will try to find valid development code
+/// Given a [BuildableTVOSApp], this will try to find valid development code
 /// signing identities in the user's keychain prompting a choice if multiple
 /// are found.
 ///
@@ -97,7 +97,7 @@ final RegExp _certificateOrganizationalUnitExtractionPattern = RegExp(r'OU=([a-z
 /// Will return null if none are found, if the user cancels or if the Xcode
 /// project has a development team set in the project's build settings.
 Future<Map<String, String>> getCodeSigningIdentityDevelopmentTeam({
-  @required BuildableIOSApp iosApp,
+  @required BuildableTVOSApp iosApp,
   @required ProcessManager processManager,
   @required Logger logger,
   @required BuildInfo buildInfo,

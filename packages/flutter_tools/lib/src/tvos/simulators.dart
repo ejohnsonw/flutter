@@ -427,7 +427,7 @@ class IOSSimulator extends Device {
     bool ipv6 = false,
     String userIdentifier,
   }) async {
-    if (!prebuiltApplication && package is BuildableIOSApp) {
+    if (!prebuiltApplication && package is BuildableTVOSApp) {
       globals.printTrace('Building ${package.name} for $id.');
 
       try {
@@ -512,7 +512,7 @@ class IOSSimulator extends Device {
     return LaunchResult.failed();
   }
 
-  Future<void> _setupUpdatedApplicationBundle(covariant BuildableIOSApp app, BuildInfo buildInfo, String mainPath) async {
+  Future<void> _setupUpdatedApplicationBundle(covariant BuildableTVOSApp app, BuildInfo buildInfo, String mainPath) async {
     // Step 1: Build the Xcode project.
     // The build mode for the simulator is always debug.
     assert(buildInfo.isDebug);

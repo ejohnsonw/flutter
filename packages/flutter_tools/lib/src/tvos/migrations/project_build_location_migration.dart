@@ -12,7 +12,7 @@ import '../../project.dart';
 // Update the xcodeproj build location. Legacy build location does not work with Swift Packages.
 class ProjectBuildLocationMigration extends ProjectMigrator {
   ProjectBuildLocationMigration(
-    IosProject project,
+    TvosProject project,
     Logger logger,
   ) : _xcodeProjectWorkspaceData = project.xcodeProjectWorkspaceData,
       super(logger);

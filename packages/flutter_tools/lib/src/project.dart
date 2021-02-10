@@ -408,8 +408,6 @@ abstract class CmakeBasedProject {
 /// Flutter applications and the `.ios/` sub-folder of Flutter module projects.
 class IosProject extends FlutterProjectPlatform implements XcodeBasedProject {
 
-
-
   IosProject.fromFlutter(this.parent);
 
   @override
@@ -784,7 +782,7 @@ class IosProject extends FlutterProjectPlatform implements XcodeBasedProject {
 ///
 /// Instances will reflect the contents of the `ios/` sub-folder of
 /// Flutter applications and the `.ios/` sub-folder of Flutter module projects.
-class TvosProject extends IosProject implements XcodeBasedProject {
+class TvosProject  implements XcodeBasedProject {
   TvosProject.fromFlutter(this.parent);
 
   @override

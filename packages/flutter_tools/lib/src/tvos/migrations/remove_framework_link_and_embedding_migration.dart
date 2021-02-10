@@ -18,7 +18,7 @@ import '../../reporting/reporting.dart';
 // Remove the linking and embedding logic from the Xcode project to give the tool more control over these.
 class RemoveFrameworkLinkAndEmbeddingMigration extends ProjectMigrator {
   RemoveFrameworkLinkAndEmbeddingMigration(
-    IosProject project,
+    TvosProject project,
     Logger logger,
     Xcode xcode,
     Usage usage,

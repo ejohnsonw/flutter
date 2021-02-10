@@ -318,7 +318,7 @@ class IOSDevice extends Device {
 
       // Step 1: Build the precompiled/DBC application if necessary.
       final XcodeBuildResult buildResult = await buildXcodeProject(
-          app: package as BuildableIOSApp,
+          app: package as BuildableTVOSApp,
           buildInfo: debuggingOptions.buildInfo,
           targetOverride: mainPath,
           buildForDevice: true,
